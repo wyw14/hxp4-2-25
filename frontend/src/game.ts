@@ -1,8 +1,9 @@
 import './styles.css';
-import { GameState, HexCoord, HexType } from './types';
+import { GameState, HexCoord, HexType, ThemeName } from './types';
 import { HexGridRenderer } from './hexGrid';
 import { createGame, getGame, extendMycelium, undoMove, resetGame, findPath } from './api';
 import { coordKey, findPathAStar, PixelCoord } from './hexUtils';
+import { THEMES } from './themes';
 
 type MessageType = 'info' | 'success' | 'error';
 
@@ -21,6 +22,7 @@ export class FungiGame {
   private messageTimeout: any = null;
   private isProcessing = false;
   private previewPathCoord: HexCoord | null = null;
+  private currentTheme: ThemeName = 'forest';
 
   constructor() {
     const hexContainer = document.getElementById('hex-container')!;
@@ -39,8 +41,41 @@ export class FungiGame {
   }
 
   private initUI(): void {
+    this.applyTheme(this.currentTheme);
     this.renderPanel();
     this.startNewGame(this.selectedLevel);
+  }
+
+  private applyTheme(themeName: ThemeName): void {
+    this.currentTheme = themeName;
+    this.hexGrid.setTheme(themeName);
+    const theme = THEMES[themeName];
+    const colors = theme.colors;
+
+    document.body.style.background = `linear-gradient(135deg, ${colors.background.start} 0%, ${colors.background.mid} 50%, ${colors.background.end} 100%)`;
+    document.body.style.color = colors.text.primary;
+
+    document.documentElement.style.setProperty('--theme-primary', colors.accent.primary);
+    document.documentElement.style.setProperty('--theme-secondary', colors.accent.secondary);
+    document.documentElement.style.setProperty('--theme-warning', colors.accent.warning);
+    document.documentElement.style.setProperty('--theme-danger', colors.accent.danger);
+    document.documentElement.style.setProperty('--theme-info', colors.accent.info);
+    document.documentElement.style.setProperty('--theme-success', colors.accent.success);
+    document.documentElement.style.setProperty('--theme-text-primary', colors.text.primary);
+    document.documentElement.style.setProperty('--theme-text-secondary', colors.text.secondary);
+    document.documentElement.style.setProperty('--theme-panel-bg', colors.panel.bg);
+    document.documentElement.style.setProperty('--theme-panel-border', colors.panel.border);
+    document.documentElement.style.setProperty('--theme-stat-bg', colors.statCard.bg);
+    document.documentElement.style.setProperty('--theme-stat-border', colors.statCard.border);
+    document.documentElement.style.setProperty('--theme-btn-primary-start', colors.button.primaryStart);
+    document.documentElement.style.setProperty('--theme-btn-primary-end', colors.button.primaryEnd);
+    document.documentElement.style.setProperty('--theme-btn-secondary-bg', colors.button.secondaryBg);
+    document.documentElement.style.setProperty('--theme-btn-secondary-border', colors.button.secondaryBorder);
+  }
+
+  private handleThemeChange(themeName: ThemeName): void {
+    this.applyTheme(themeName);
+    this.renderPanel();
   }
 
   private renderPanel(): void {
@@ -54,6 +89,9 @@ export class FungiGame {
     `;
     document.getElementById('app-header')!.innerHTML = '';
     document.getElementById('app-header')!.appendChild(header);
+
+    const themeSection = this.createThemeSection();
+    this.ui.panelContainer.appendChild(themeSection);
 
     const levelSection = this.createLevelSection();
     this.ui.panelContainer.appendChild(levelSection);
@@ -79,6 +117,31 @@ export class FungiGame {
     if (this.gameState?.status === 'won') {
       this.showWinModal();
     }
+  }
+
+  private createThemeSection(): HTMLElement {
+    const section = document.createElement('div');
+    section.innerHTML = `<div class="section-title">🎨 主题工坊</div>`;
+
+    const themeSelector = document.createElement('div');
+    themeSelector.className = 'theme-selector';
+
+    const themeNames: ThemeName[] = ['forest', 'nightglow', 'colorblind'];
+
+    for (const themeName of themeNames) {
+      const theme = THEMES[themeName];
+      const btn = document.createElement('button');
+      btn.className = `theme-btn${themeName === this.currentTheme ? ' active' : ''}`;
+      btn.innerHTML = `
+        <span class="theme-icon">${theme.icon}</span>
+        <span class="theme-name">${theme.displayName}</span>
+      `;
+      btn.onclick = () => this.handleThemeChange(themeName);
+      themeSelector.appendChild(btn);
+    }
+
+    section.appendChild(themeSelector);
+    return section;
   }
 
   private createLevelSection(): HTMLElement {
@@ -193,27 +256,30 @@ export class FungiGame {
     const section = document.createElement('div');
     section.innerHTML = `<div class="section-title">图例说明</div>`;
 
+    const theme = THEMES[this.currentTheme];
+    const legendColors = theme.colors.legend;
+
     const legend = document.createElement('div');
     legend.className = 'legend';
     legend.innerHTML = `
       <div class="legend-item">
-        <div class="legend-color" style="background: #5fa8d3;"></div>
+        <div class="legend-color" style="background: ${legendColors.start};"></div>
         <div class="legend-text">🏠 菌丝起点（菌落）</div>
       </div>
       <div class="legend-item">
-        <div class="legend-color" style="background: #6ab04c;"></div>
+        <div class="legend-color" style="background: ${legendColors.mycelium};"></div>
         <div class="legend-text">🍄 菌丝区域</div>
       </div>
       <div class="legend-item">
-        <div class="legend-color" style="background: #c68642;"></div>
+        <div class="legend-color" style="background: ${legendColors.nutrient};"></div>
         <div class="legend-text">🪵 腐木营养源（需连接）</div>
       </div>
       <div class="legend-item">
-        <div class="legend-color" style="background: #8b0000;"></div>
+        <div class="legend-color" style="background: ${legendColors.polluted};"></div>
         <div class="legend-text">☢️ 重金属污染区（禁止）</div>
       </div>
       <div class="legend-item">
-        <div class="legend-color" style="background: #2a2a4a; border: 1px dashed #7ed957;"></div>
+        <div class="legend-color" style="background: ${legendColors.empty}; border: 1px dashed ${legendColors.emptyBorder};"></div>
         <div class="legend-text">⬜ 可蔓延区域（虚线框）</div>
       </div>
     `;

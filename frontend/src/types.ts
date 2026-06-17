@@ -38,3 +38,68 @@ export interface ApiResponse<T = void> {
   data?: T;
   error?: string;
 }
+
+export type ThemeName = 'forest' | 'nightglow' | 'colorblind';
+
+export interface ThemeCellColors {
+  fill: string;
+  stroke: string;
+}
+
+export interface ThemeColors {
+  empty: ThemeCellColors;
+  nutrient: ThemeCellColors;
+  polluted: ThemeCellColors;
+  mycelium: ThemeCellColors;
+  start: ThemeCellColors;
+  myceliumConnection: string;
+  pathPreview: string;
+  reachableStroke: string;
+  myceliumDot: string;
+  background: {
+    start: string;
+    mid: string;
+    end: string;
+  };
+  panel: {
+    bg: string;
+    border: string;
+  };
+  statCard: {
+    bg: string;
+    border: string;
+  };
+  text: {
+    primary: string;
+    secondary: string;
+  };
+  accent: {
+    primary: string;
+    secondary: string;
+    warning: string;
+    danger: string;
+    info: string;
+    success: string;
+  };
+  legend: {
+    start: string;
+    mycelium: string;
+    nutrient: string;
+    polluted: string;
+    empty: string;
+    emptyBorder: string;
+  };
+  button: {
+    primaryStart: string;
+    primaryEnd: string;
+    secondaryBg: string;
+    secondaryBorder: string;
+  };
+}
+
+export interface Theme {
+  name: ThemeName;
+  displayName: string;
+  icon: string;
+  colors: ThemeColors;
+}

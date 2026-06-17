@@ -1,4 +1,4 @@
-import { GameState, HexCell, HexCoord, HexType } from './types';
+import { GameState, HexCell, HexCoord, HexType, Theme, ThemeName } from './types';
 import {
   coordKey,
   generateHexGrid,
@@ -7,6 +7,7 @@ import {
   getNeighbors,
   PixelCoord,
 } from './hexUtils';
+import { THEMES, getThemeColorsForHexType } from './themes';
 
 interface HexGridOptions {
   container: HTMLElement;
@@ -14,14 +15,6 @@ interface HexGridOptions {
   onCellClick?: (coord: HexCoord) => void;
   onCellHover?: (coord: HexCoord | null, pixel: PixelCoord | null) => void;
 }
-
-const COLORS = {
-  [HexType.EMPTY]: { fill: '#2a2a4a', stroke: '#3a3a5a' },
-  [HexType.NUTRIENT]: { fill: '#c68642', stroke: '#8b5a2b' },
-  [HexType.POLLUTED]: { fill: '#8b0000', stroke: '#5c0000' },
-  [HexType.MYCELIUM]: { fill: '#6ab04c', stroke: '#7ed957' },
-  [HexType.START]: { fill: '#5fa8d3', stroke: '#7ec8e3' },
-};
 
 export class HexGridRenderer {
   private container: HTMLElement;
@@ -35,12 +28,14 @@ export class HexGridRenderer {
   private reachableKeys = new Set<string>();
   private offsetX = 0;
   private offsetY = 0;
+  private currentTheme: Theme;
 
   constructor(options: HexGridOptions) {
     this.container = options.container;
     this.size = options.size ?? 36;
     this.onCellClick = options.onCellClick;
     this.onCellHover = options.onCellHover;
+    this.currentTheme = THEMES.forest;
 
     this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.svg.setAttribute('class', 'hex-svg-wrapper');
@@ -51,6 +46,15 @@ export class HexGridRenderer {
     this.gameState = game;
     this.updateReachable();
     this.render();
+  }
+
+  setTheme(themeName: ThemeName): void {
+    this.currentTheme = THEMES[themeName];
+    this.render();
+  }
+
+  getTheme(): Theme {
+    return this.currentTheme;
   }
 
   private updateReachable(): void {
@@ -128,7 +132,7 @@ export class HexGridRenderer {
     const pixel = hexToPixel(cell.coord, this.size);
     const cx = pixel.x + this.offsetX;
     const cy = pixel.y + this.offsetY;
-    const color = COLORS[cell.type];
+    const color = getThemeColorsForHexType(this.currentTheme, cell.type);
 
     g.setAttribute('class', `hex-cell${this.reachableKeys.has(key) ? ' reachable' : ''}`);
     g.setAttribute('data-q', String(cell.coord.q));
@@ -137,12 +141,11 @@ export class HexGridRenderer {
     const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     shape.setAttribute('d', hexCornersPath({ x: cx, y: cy }, this.size - 2));
     shape.setAttribute('fill', color.fill);
-    shape.setAttribute('stroke', color.stroke);
+    shape.setAttribute('stroke', this.reachableKeys.has(key) ? this.currentTheme.colors.reachableStroke : color.stroke);
     shape.setAttribute('stroke-width', this.reachableKeys.has(key) ? '2' : '1.5');
     shape.setAttribute('class', 'hex-shape');
 
     if (this.reachableKeys.has(key)) {
-      shape.setAttribute('stroke', '#7ed957');
       shape.setAttribute('stroke-dasharray', '4 2');
     }
 
@@ -216,7 +219,7 @@ export class HexGridRenderer {
         circle.setAttribute('cx', String(cx));
         circle.setAttribute('cy', String(cy));
         circle.setAttribute('r', String(this.size * 0.3));
-        circle.setAttribute('fill', '#a8e063');
+        circle.setAttribute('fill', this.currentTheme.colors.myceliumDot);
         g.appendChild(circle);
         break;
       }
@@ -244,7 +247,7 @@ export class HexGridRenderer {
         line.setAttribute('y1', String(p1.y + this.offsetY));
         line.setAttribute('x2', String(p2.x + this.offsetX));
         line.setAttribute('y2', String(p2.y + this.offsetY));
-        line.setAttribute('stroke', '#7ed957');
+        line.setAttribute('stroke', this.currentTheme.colors.myceliumConnection);
         line.setAttribute('stroke-width', '3');
         line.setAttribute('stroke-linecap', 'round');
         line.setAttribute('opacity', '0.8');
@@ -268,6 +271,8 @@ export class HexGridRenderer {
     this.pathPreviewGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     this.pathPreviewGroup.setAttribute('pointer-events', 'none');
 
+    const pathColor = this.currentTheme.colors.pathPreview;
+
     for (let i = 0; i < path.length - 1; i++) {
       const p1 = hexToPixel(path[i], this.size);
       const p2 = hexToPixel(path[i + 1], this.size);
@@ -277,7 +282,7 @@ export class HexGridRenderer {
       line.setAttribute('y1', String(p1.y + this.offsetY));
       line.setAttribute('x2', String(p2.x + this.offsetX));
       line.setAttribute('y2', String(p2.y + this.offsetY));
-      line.setAttribute('stroke', '#ffeb3b');
+      line.setAttribute('stroke', pathColor);
       line.setAttribute('stroke-width', '4');
       line.setAttribute('stroke-linecap', 'round');
       line.setAttribute('stroke-dasharray', '8 4');
@@ -291,7 +296,7 @@ export class HexGridRenderer {
       circle.setAttribute('cx', String(p.x + this.offsetX));
       circle.setAttribute('cy', String(p.y + this.offsetY));
       circle.setAttribute('r', String(6));
-      circle.setAttribute('fill', '#ffeb3b');
+      circle.setAttribute('fill', pathColor);
       circle.setAttribute('opacity', '0.8');
       this.pathPreviewGroup.appendChild(circle);
     }
