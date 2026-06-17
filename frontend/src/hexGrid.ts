@@ -25,6 +25,7 @@ export class HexGridRenderer {
   private onCellHover?: (coord: HexCoord | null, pixel: PixelCoord | null) => void;
   private cellGroups = new Map<string, SVGGElement>();
   private pathPreviewGroup: SVGGElement | null = null;
+  private currentPreviewPath: HexCoord[] | null = null;
   private reachableKeys = new Set<string>();
   private offsetX = 0;
   private offsetY = 0;
@@ -121,8 +122,9 @@ export class HexGridRenderer {
 
     this.renderMyceliumConnections();
 
-    if (this.pathPreviewGroup) {
-      this.svg.appendChild(this.pathPreviewGroup);
+    if (this.currentPreviewPath && this.currentPreviewPath.length >= 2) {
+      this.pathPreviewGroup = null;
+      this.buildPathPreview(this.currentPreviewPath);
     }
   }
 
@@ -259,6 +261,8 @@ export class HexGridRenderer {
   }
 
   showPathPreview(path: HexCoord[] | null): void {
+    this.currentPreviewPath = path;
+
     if (this.pathPreviewGroup) {
       if (this.svg.contains(this.pathPreviewGroup)) {
         this.svg.removeChild(this.pathPreviewGroup);
@@ -267,6 +271,17 @@ export class HexGridRenderer {
     }
 
     if (!path || path.length < 2) return;
+
+    this.buildPathPreview(path);
+  }
+
+  private buildPathPreview(path: HexCoord[]): void {
+    if (this.pathPreviewGroup) {
+      if (this.svg.contains(this.pathPreviewGroup)) {
+        this.svg.removeChild(this.pathPreviewGroup);
+      }
+      this.pathPreviewGroup = null;
+    }
 
     this.pathPreviewGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     this.pathPreviewGroup.setAttribute('pointer-events', 'none');

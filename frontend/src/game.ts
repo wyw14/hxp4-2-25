@@ -69,8 +69,28 @@ export class FungiGame {
     document.documentElement.style.setProperty('--theme-stat-border', colors.statCard.border);
     document.documentElement.style.setProperty('--theme-btn-primary-start', colors.button.primaryStart);
     document.documentElement.style.setProperty('--theme-btn-primary-end', colors.button.primaryEnd);
+    document.documentElement.style.setProperty('--theme-btn-primary-shadow', colors.button.primaryShadow);
     document.documentElement.style.setProperty('--theme-btn-secondary-bg', colors.button.secondaryBg);
     document.documentElement.style.setProperty('--theme-btn-secondary-border', colors.button.secondaryBorder);
+    document.documentElement.style.setProperty('--theme-btn-secondary-hover-bg', colors.button.secondaryHoverBg);
+    document.documentElement.style.setProperty('--theme-btn-danger-bg', colors.button.dangerBg);
+    document.documentElement.style.setProperty('--theme-btn-danger-border', colors.button.dangerBorder);
+    document.documentElement.style.setProperty('--theme-btn-danger-hover-bg', colors.button.dangerHoverBg);
+    document.documentElement.style.setProperty('--theme-msg-info-bg', colors.message.infoBg);
+    document.documentElement.style.setProperty('--theme-msg-info-border', colors.message.infoBorder);
+    document.documentElement.style.setProperty('--theme-msg-success-bg', colors.message.successBg);
+    document.documentElement.style.setProperty('--theme-msg-success-border', colors.message.successBorder);
+    document.documentElement.style.setProperty('--theme-msg-error-bg', colors.message.errorBg);
+    document.documentElement.style.setProperty('--theme-msg-error-border', colors.message.errorBorder);
+    document.documentElement.style.setProperty('--theme-header-gradient-start', colors.header.gradientStart);
+    document.documentElement.style.setProperty('--theme-header-gradient-mid', colors.header.gradientMid);
+    document.documentElement.style.setProperty('--theme-header-gradient-end', colors.header.gradientEnd);
+    document.documentElement.style.setProperty('--theme-hover-highlight', colors.hoverHighlight);
+    document.documentElement.style.setProperty('--theme-win-bg-start', colors.winModal.bgStart);
+    document.documentElement.style.setProperty('--theme-win-bg-end', colors.winModal.bgEnd);
+    document.documentElement.style.setProperty('--theme-win-title-start', colors.winModal.titleGradientStart);
+    document.documentElement.style.setProperty('--theme-win-title-end', colors.winModal.titleGradientEnd);
+    document.documentElement.style.setProperty('--theme-win-stat-bg', colors.winModal.statBg);
   }
 
   private handleThemeChange(themeName: ThemeName): void {
@@ -208,7 +228,7 @@ export class FungiGame {
     const progressWrap = document.createElement('div');
     progressWrap.style.marginBottom = '24px';
     progressWrap.innerHTML = `
-      <div style="display: flex; justify-content: space-between; font-size: 12px; color: #8a8a9a; margin-bottom: 4px;">
+      <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--theme-text-secondary); margin-bottom: 4px;">
       <span>连接进度</span>
       <span>${Math.round(progress)}%</span>
     </div>
@@ -322,7 +342,7 @@ export class FungiGame {
             <div class="win-stat-value">${optimal}</div>
           </div>
         </div>
-        <div style="color: #8a8a9a; font-size: 13px; margin-bottom: 24px;">
+        <div style="color: var(--theme-text-secondary); font-size: 13px; margin-bottom: 24px;">
           ${stars === 3 ? '完美！你找到了最优解！' : stars === 2 ? '表现不错，还能更优！' : '再接再厉，寻找更短的路径！'}
         </div>
         <div style="display: flex; gap: 10px; flex-direction: column;">

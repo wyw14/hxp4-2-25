@@ -56,6 +56,7 @@ export interface ThemeColors {
   pathPreview: string;
   reachableStroke: string;
   myceliumDot: string;
+  hoverHighlight: string;
   background: {
     start: string;
     mid: string;
@@ -92,8 +93,33 @@ export interface ThemeColors {
   button: {
     primaryStart: string;
     primaryEnd: string;
+    primaryShadow: string;
     secondaryBg: string;
     secondaryBorder: string;
+    secondaryHoverBg: string;
+    dangerBg: string;
+    dangerBorder: string;
+    dangerHoverBg: string;
+  };
+  message: {
+    infoBg: string;
+    infoBorder: string;
+    successBg: string;
+    successBorder: string;
+    errorBg: string;
+    errorBorder: string;
+  };
+  header: {
+    gradientStart: string;
+    gradientMid: string;
+    gradientEnd: string;
+  };
+  winModal: {
+    bgStart: string;
+    bgEnd: string;
+    titleGradientStart: string;
+    titleGradientEnd: string;
+    statBg: string;
   };
 }
 
